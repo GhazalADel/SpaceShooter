@@ -2,6 +2,8 @@ import pygame
 import os
 
 pygame.init()
+pygame.font.init()
+pygame.mixer.init()
 
 #constants
 WIDTH , HEIGHT = 800,600
@@ -13,8 +15,6 @@ BULLET_CHANGE_X=6
 MAX_BULLET=8
 
 
-global red_health,blue_health
-red_health=blue_health=10
 
 #event code
 RED_HIT=pygame.USEREVENT+1
@@ -28,10 +28,12 @@ blue_spaceship=pygame.transform.rotate(pygame.transform.scale(blue_spaceship_ima
 red_spaceship_image=pygame.image.load(os.path.join("images","red_spaceship.png"))
 red_spaceship=pygame.transform.rotate(pygame.transform.scale(red_spaceship_image, (SPACESHIP_WIDTH, SPACESHIP_HEIGHT)), 90)
 health_image=pygame.image.load(os.path.join("images","health.png"))
-health=pygame.transform.scale(health_image,(30,30))
+health=pygame.transform.scale(health_image,(50,50))
 
 
 #fonts
+health_font=pygame.font.Font(os.path.join("fonts","FruitDays.ttf"),25)
+win_font=pygame.font.Font(os.path.join("fonts","FruitDays.ttf"),45)
 
 
 
@@ -42,14 +44,20 @@ pygame.display.set_icon(icon)
 
 
 
-def draw_screen(blue,red):
+def draw_screen(blue,red,red_health,blue_health):
     screen.blit(background,(0,0))
+    red_health_text = health_font.render("x" + str(red_health), True, (255, 255, 255))
+    blue_health_text = health_font.render("x" + str(blue_health), True, (255, 255, 255))
+    screen.blit(red_health_text, (750, 38))
+    screen.blit(blue_health_text, (75, 38))
     screen.blit(blue_spaceship,(blue.x,blue.y))
     screen.blit(red_spaceship,(red.x,red.y))
     pygame.draw.rect(screen,(0,0,255),pygame.Rect(WIDTH/2-2.25,0,7,HEIGHT))
     pygame.draw.rect(screen,(255,0,0),pygame.Rect(WIDTH/2+6,0,7,HEIGHT))
     pygame.draw.rect(screen,(8,12,21),pygame.Rect(WIDTH/2,0,10,HEIGHT))
     screen.blit(health,(700,20))
+    screen.blit(health,(25, 20))
+
     pygame.display.update()
 
 def blue_move(key_pressed,blue):
@@ -131,7 +139,15 @@ def draw_bullets(blue_bullet,red_bullet):
         pygame.draw.rect(screen,(255,0,0),bullet)
     pygame.display.update()
 
+def show_winner_text(text):
+    win_text = win_font.render(text, 1, (255, 255, 255))
+    screen.blit(win_text, (WIDTH//2-win_text.get_width()//2, HEIGHT//2-win_text.get_height()//2))
+    pygame.display.update()
+    pygame.time.delay(5000)
+
+
 def main():
+    red_health = blue_health = 10
     blue=pygame.Rect(100,300,SPACESHIP_WIDTH,SPACESHIP_HEIGHT)
     red=pygame.Rect(600,300,SPACESHIP_WIDTH,SPACESHIP_HEIGHT)
     clock=pygame.time.Clock()
@@ -143,6 +159,7 @@ def main():
         for event in pygame.event.get():
             if event.type==pygame.QUIT:
                 running=False
+                pygame.quit()
             if event.type==pygame.KEYDOWN:
                 if event.key==pygame.K_LCTRL and len(blue_bullets)!=MAX_BULLET:
                     bullet=pygame.Rect(blue.x+SPACESHIP_WIDTH,blue.y+SPACESHIP_HEIGHT//2,10,5)
@@ -151,25 +168,24 @@ def main():
                     bullet=pygame.Rect(red.x,red.y+SPACESHIP_HEIGHT//2,10,5)
                     red_bullets.append(bullet)
             if event.type==RED_HIT:
-                global red_health
                 red_health-=1
             if event.type==BLUE_HIT:
-                global blue_health
                 blue_health-=1
-
+        wintext=""
+        if red_health<=0:
+            wintext="blue wins!"
+        if blue_health<=0:
+            wintext="red wins!"
+        if wintext!="":
+            show_winner_text(wintext)
+            break
         key_pressed=pygame.key.get_pressed()
         blue_move(key_pressed,blue)
         red_move(key_pressed,red)
         handle_bullets(blue,red,blue_bullets,red_bullets)
-        draw_screen(blue,red)
+        draw_screen(blue,red,red_health,blue_health)
         draw_bullets(blue_bullets,red_bullets)
-    pygame.quit()
-
-
-
-
-
-
+    main()
 
 if __name__=="__main__":
     main()
