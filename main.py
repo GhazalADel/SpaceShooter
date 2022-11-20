@@ -1,5 +1,6 @@
 import pygame
 import os
+from pygame import mixer
 
 pygame.init()
 pygame.font.init()
@@ -107,6 +108,8 @@ def handle_bullets(blue,red,blue_bullets,red_bullets):
     for bullet in blue_bullets:
         bullet.x+=BULLET_CHANGE_X
         if red.colliderect(bullet):
+            coll_sound = mixer.Sound(os.path.join("musics", "collision.wav"))
+            coll_sound.play()
             pygame.event.post(pygame.event.Event(RED_HIT))
             blue_bullets.remove(bullet)
         elif bullet.x>WIDTH:
@@ -114,12 +117,16 @@ def handle_bullets(blue,red,blue_bullets,red_bullets):
         else:
             for redBullet in red_bullets:
                 if redBullet.colliderect(bullet):
+                    coll_sound = mixer.Sound(os.path.join("musics", "collision.wav"))
+                    coll_sound.play()
                     blue_bullets.remove(bullet)
                     red_bullets.remove(redBullet)
 
     for bullet in red_bullets:
         bullet.x-=BULLET_CHANGE_X
         if blue.colliderect(bullet):
+            coll_sound = mixer.Sound(os.path.join("musics", "collision.wav"))
+            coll_sound.play()
             pygame.event.post(pygame.event.Event(BLUE_HIT))
             red_bullets.remove(bullet)
         elif bullet.x<0:
@@ -127,6 +134,8 @@ def handle_bullets(blue,red,blue_bullets,red_bullets):
         else:
             for blueBullet in blue_bullets:
                 if blueBullet.colliderect(bullet):
+                    coll_sound = mixer.Sound(os.path.join("musics", "collision.wav"))
+                    coll_sound.play()
                     blue_bullets.remove(blueBullet)
                     red_bullets.remove(bullet)
 
@@ -147,6 +156,8 @@ def show_winner_text(text):
 
 
 def main():
+    mixer.music.load(os.path.join("musics","background.wav"))
+    mixer.music.play(-1)
     red_health = blue_health = 10
     blue=pygame.Rect(100,300,SPACESHIP_WIDTH,SPACESHIP_HEIGHT)
     red=pygame.Rect(600,300,SPACESHIP_WIDTH,SPACESHIP_HEIGHT)
@@ -162,9 +173,13 @@ def main():
                 pygame.quit()
             if event.type==pygame.KEYDOWN:
                 if event.key==pygame.K_LCTRL and len(blue_bullets)!=MAX_BULLET:
+                    bullet_sound=mixer.Sound(os.path.join("musics","bullet.wav"))
+                    bullet_sound.play()
                     bullet=pygame.Rect(blue.x+SPACESHIP_WIDTH,blue.y+SPACESHIP_HEIGHT//2,10,5)
                     blue_bullets.append(bullet)
                 if event.key==pygame.K_RCTRL and len(red_bullets)!=MAX_BULLET:
+                    bullet_sound=mixer.Sound(os.path.join("musics","bullet.wav"))
+                    bullet_sound.play()
                     bullet=pygame.Rect(red.x,red.y+SPACESHIP_HEIGHT//2,10,5)
                     red_bullets.append(bullet)
             if event.type==RED_HIT:
